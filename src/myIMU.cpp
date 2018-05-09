@@ -1,5 +1,6 @@
 #include"myIMU.h"
 #include<iostream>
+#include<math.h>
 
 MyIMU::MyIMU()
 {
@@ -68,7 +69,7 @@ int MyIMU::get_ds(double &sx,double &sy,double &sz)
 }
 
 
-void MyIMU::caculate(double ax,double ay,double az)
+int MyIMU::caculate(double ax,double ay,double az)
 {
     static bool flag = 0;
     
@@ -77,7 +78,7 @@ void MyIMU::caculate(double ax,double ay,double az)
     {
         gettimeofday(&start,NULL);
         flag=1;
-        return;
+        return 0;
     }
     
     
@@ -95,6 +96,16 @@ void MyIMU::caculate(double ax,double ay,double az)
     
     std::cout<<"ax:"<<ax<<","<<"ay:"<<ay<<","<<"az:"<<az<<std::endl;
     
+    double g_mod=sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);//重力加速度的模
+    double a_mod=sqrt(ax*ax+ay*ay+az*az);//当前加速度的模
+    
+    double diff_g_a_mod;
+    
+    if(a_mod-g_mod>0)
+        diff_g_a_mod=a_mod-g_mod;
+    else
+        diff_g_a_mod=g_mod-a_mod;
+        
     //算a
     a_now[0]=ax-g[0];
     a_now[1]=ay-g[1];
@@ -112,7 +123,7 @@ void MyIMU::caculate(double ax,double ay,double az)
         else
             tmp[i]=a_now[i];
             
-        if(tmp[i]<filter[i])
+        if(tmp[i]<filter[i]*(1-diff_g_a_mod))
         {
             a_now[i]=0;
         }
@@ -155,10 +166,28 @@ void MyIMU::caculate(double ax,double ay,double az)
     if(cur_stop_timeout>stop_timeout)
     {
         clear_v();
+        
+        
     }
     
     start=end;
     
+    
+    std::cout<<"diff_g_a_mod="<<diff_g_a_mod<<std::endl;
+        
+        if(diff_g_a_mod<0.15)
+        {
+            if((a[0]<-1.5*filter[0]||1.5*filter[0]<a[0])||
+                (a[1]<-1.5*filter[1]||1.5*filter[1]<a[1])||
+                (a[2]<-1.5*filter[2]||1.5*filter[2]<a[2]))
+            {
+                std::cout<<"!!!!!!!!!need reset g and fliter"<<std::endl;
+                return -1;
+            }
+        }
+        
+        
+    return 1;
     
 }
 

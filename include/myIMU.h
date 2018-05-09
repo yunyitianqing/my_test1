@@ -7,10 +7,10 @@
 
 class MyIMU
 {
-
+    //所有的[3]都是x,y,z的格式。
     double filter[3];
 
-    //所有的[3]都是x,y,z的格式。
+    
 
     double a[3];
     double g[3];
@@ -37,7 +37,7 @@ class MyIMU
 public:
     MyIMU();
     
-    void set_g(double gx,double gy,double gz=0);
+    void set_g(double gx,double gy,double gz);
     void clear_v();
     void reset_global_s(double x=0,double y=0,double z=0);
     void set_filter(double ax,double ay,double az);
@@ -45,10 +45,10 @@ public:
     void set_stop_timeout(int times=10);
     
     //迭代计算v，然后通过v计算ds
-    void caculate(double ax,double ay,double az);
+    int caculate(double ax,double ay,double az);
     
     //迭代计算v，然后通过v计算ds,最后通过yaw计算global_s
-    void caculate(double ax,double ay,double az,double yaw);
+    int caculate(double ax,double ay,double az,double yaw);
     
     
     int get_a(double &ax,double &ay,double &az);
